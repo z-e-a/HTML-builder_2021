@@ -1,19 +1,19 @@
-const { debug } = require('console');
+// const { debug } = require('console');
 const fs = require('fs');
 const path = require('path');
 
 try {
-    debugger
+    // debugger
   const files =  fs.readdir(path.join(__dirname, 'secret-folder')
   ,{ withFileTypes: true },
   (err, files) => {
-  console.log("\nCurrent directory files:");
+  // console.log("\nCurrent directory files:");
   if (err)
     console.log(err);
   else {
     files.forEach(file => {
         if (file.isFile()){
-            console.log(file);
+            console.log(file.name);
         }
     })
   }
