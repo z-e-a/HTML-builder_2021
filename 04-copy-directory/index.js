@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-debugger
+// debugger
 fs.mkdir(path.join(__dirname, 'files-copy'),{recursive: false},function(){});
 
 const files =  fs.readdir(path.join(__dirname, 'files')
