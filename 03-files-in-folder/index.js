@@ -1,4 +1,5 @@
 // const { debug } = require('console');
+const { log } = require('console');
 const fs = require('fs');
 const path = require('path');
 
@@ -13,7 +14,17 @@ try {
   else {
     files.forEach(file => {
         if (file.isFile()){
-            console.log(file.name);
+          // console.log(file.name);          
+          fs.stat(path.join(__dirname, 'secret-folder',file.name), (err, fileStats)=>{
+            // debugger
+            if (err) {
+              console.error(err)
+              return
+            }            
+            // console.log(file.name.split('.')[0] + ' - ' + fileStats.size);
+            // console.log(`${file.name.split('.')[0]} - ${file.name.split('.')[1]}  - ${fileStats.size / 1024}kb`);
+            console.log(`${file.name.split('.')[0]} - ${file.name.split('.')[1]}  - ${fileStats.size} bytes`);
+          });
         }
     })
   }
