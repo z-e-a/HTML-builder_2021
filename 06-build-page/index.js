@@ -128,8 +128,8 @@ function copyDirRecursive(sourceDir, destDir){
     { recursive: false },
     (err) => {
       if (err) {
-        return console.error(err);
-      } else {
+        // return console.error(err);
+      } 
         fs.readdir(
           path.join(sourceDir),
           { withFileTypes: true },
@@ -156,7 +156,6 @@ function copyDirRecursive(sourceDir, destDir){
             }
           }
         );
-      }
     }
   )  
 }
