@@ -1,5 +1,11 @@
+const { debug } = require("console");
 const fs = require("fs");
 const path = require("path");
+
+
+if (path.resolve(__dirname, "project-dist")){
+
+};
 
 fs.mkdir(
   path.join(__dirname, "project-dist"),
@@ -8,49 +14,70 @@ fs.mkdir(
 );
 /////////////////////////////////////////
 
-// const htmlBundle = fs.createWriteStream(
-//     path.join(__dirname, "project-dist", "index.html")
-// );
+const templateStream = new fs.ReadStream(path.join(__dirname, "template.html"));
 
+var dataText = "";
 
-const templateStream = new fs.ReadStream(path.join(__dirname, 'template.html'));
-
-
-templateStream.on('readable', async function(){
+templateStream.on("readable", async function () {
   const data = templateStream.read();
-  if(data != null)
-  fs.writeFile(path.join(__dirname, "project-dist", "index.html"), data.toString(), function (error) {
-    if (error) throw error; // если возникла ошибка
-  });
+  if (data != null)
+    fs.writeFile(
+      path.join(__dirname, "project-dist", "index.html"),
+      data.toString(),
+      function (error) {
+        if (error) throw error; // если возникла ошибка
+      }
+    );
 
-/*   const data = templateStream.read();   
-    if(data != null) {
-        // console.log(data.toString()); //.replace(/\n/g, ''));
-        fs.readdir(
-            path.join(__dirname, "components"),
-            { withFileTypes: true },
-            (err, files) => {
-            if (err) console.log(err);
-            else {
-                files.filter(
-                    (file) =>
-                    file.isFile() && path.extname(file.name).toLowerCase() === ".html"
-                ).forEach((file) => {
-                    // `{{${path.parse(filePath).name}}}
-                    try{
-                        let componentData = await fs.readFile(path.join(__dirname, "components", file.name))
-                        data.toString().replace(`{{${path.parse(filePath).name}}}`, componentData.toString());
-                    } catch (err){
-                        console.log(err);
-                    }
-                })
-                }
-            }
-        );
+  if (data != null) {
+    dataText = data.toString();
 
-    }
- */    
+    fs.readdir(
+      path.join(__dirname, "components"),
+      { withFileTypes: true },
+      (err, files) => {
+        if (err) console.log(err);
+        else {
+          // debugger;
+          doBundleHtmlRecursive(
+            files.filter(
+              (file) =>
+                file.isFile() &&
+                path.extname(file.name).toLowerCase() === ".html"
+            ),
+            dataText
+          );
+        }
+      }
+    );
+  }
 });
+
+function doBundleHtmlRecursive(files = [], dataText) {
+  if (!files.length) {
+    return fs.writeFile(
+      path.join(__dirname, "project-dist", "index.html"),
+      dataText,
+      function (error) {
+        if (error) throw error; // если возникла ошибка
+      }
+    );
+  } else {
+  fileName = files.shift().name;
+  fs.readFile(
+    path.join(__dirname, "components", fileName),
+    (err, componentData) => {
+      if (err) console.log(err);
+      else
+        dataText = dataText.replace(
+          `{{${path.parse(fileName).name}}}`,
+          componentData.toString()
+        );
+      doBundleHtmlRecursive(files, dataText);
+    }
+  );
+  }
+}
 
 /////////////////////////////////////////
 const stylesBundle = fs.createWriteStream(
@@ -76,51 +103,62 @@ fs.readdir(
 
 function streamMergeRecursive(files = [], fileWriteStream) {
   if (!files.length) {
-    return fileWriteStream.end();
+    fileWriteStream.end();
+  } else {
+    const currentFile = path.resolve(__dirname, "styles", files.shift().name);
+    const currentReadStream = fs.createReadStream(currentFile);
+
+    currentReadStream.pipe(fileWriteStream, { end: false });
+    currentReadStream.on("end", function () {
+      streamMergeRecursive(files, fileWriteStream);
+    });
+
+    currentReadStream.on("error", function (error) {
+      console.error(error);
+      fileWriteStream.close();
+    });
   }
-
-  const currentFile = path.resolve(__dirname, "styles", files.shift().name);
-  const currentReadStream = fs.createReadStream(currentFile);
-
-  currentReadStream.pipe(fileWriteStream, { end: false });
-  currentReadStream.on("end", function () {
-    streamMergeRecursive(files, fileWriteStream);
-  });
-
-  currentReadStream.on("error", function (error) {
-    console.error(error);
-    fileWriteStream.close();
-  });
 }
 
 /////////////////////////////////////////
 
-fs.mkdir(
-  path.join(__dirname, "project-dist", "assets"),
-  { recursive: false },
-  function () {}
-);
-
-const files = fs.readdir(
-  path.join(__dirname, "assets"),
-  { withFileTypes: true },
-  (err, files) => {
-    if (err) console.log(err);
-    else {
-      files.forEach((file) => {
-        if (file.isFile()) {
-          fs.copyFile(
-            path.join(__dirname, "assets", file.name),
-            path.join(__dirname, "project-dist", "assets", file.name),
-            (err) => {
-              if (err) {
-                // console.log("Error Found:", err);
-                console.error(err);
-              }
+function copyDirRecursive(sourceDir, destDir){
+  fs.mkdir(
+    destDir,
+    { recursive: false },
+    (err) => {
+      if (err) {
+        return console.error(err);
+      } else {
+        fs.readdir(
+          path.join(sourceDir),
+          { withFileTypes: true },
+          (err, files) => {
+            if (err) console.log(err);
+            else {
+              files.forEach((file) => {
+                if (file.isFile()) {
+                  fs.copyFile(
+                    path.join(sourceDir, file.name),
+                    path.join(destDir, file.name),
+                    (err) => {
+                      if (err) {
+                        console.error(err);
+                      }
+                    }
+                  );
+                  return;
+                } else if (file.isDirectory()) {
+                  debugger
+                  copyDirRecursive(path.join(sourceDir, file.name), path.join(destDir, file.name));
+                }
+              });
             }
-          );
-        }
-      });
+          }
+        );
+      }
     }
-  }
-);
+  )  
+}
+
+copyDirRecursive(path.join(__dirname, "assets"), path.join(__dirname, "project-dist", "assets")); 
