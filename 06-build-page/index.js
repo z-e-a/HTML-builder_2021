@@ -18,7 +18,7 @@ const templateStream = new fs.ReadStream(path.join(__dirname, "template.html"));
 
 var dataText = "";
 
-templateStream.on("readable", async function () {
+templateStream.on("readable", function () {
   const data = templateStream.read();
   if (data != null)
     fs.writeFile(
