@@ -5,5 +5,5 @@ const stream = new fs.ReadStream(path.join(__dirname, 'text.txt'));
 
 stream.on('readable', function(){
     const data = stream.read();
-    if(data != null) console.log(data.toString().replace(/\n/g, ''));
+    if(data != null) console.log(data.toString().replace(/\n$/g, ''));
 });

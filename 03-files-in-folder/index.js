@@ -23,7 +23,8 @@ try {
             }            
             // console.log(file.name.split('.')[0] + ' - ' + fileStats.size);
             // console.log(`${file.name.split('.')[0]} - ${file.name.split('.')[1]}  - ${fileStats.size / 1024}kb`);
-            console.log(`${file.name.split('.')[0]} - ${file.name.split('.')[1]}  - ${fileStats.size} bytes`);
+            // console.log(`${file.name.split('.')[0]} - ${file.name.split('.')[1]}  - ${fileStats.size} bytes`);
+            console.log(`${path.parse(file.name).name} - ${path.parse(file.name).ext.replace(/^./, '')} - ${fileStats.size} bytes`);
           });
         }
     })
