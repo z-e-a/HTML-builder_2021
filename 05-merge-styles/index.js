@@ -5,6 +5,27 @@ const output = fs.createWriteStream(path.join(__dirname, 'project-dist','bundle.
 
 // readable.pipe(writeable);
 
+async function checkDir(){
+
+  await fs.access(
+    path.join(__dirname, "project-dist"), async (err) => {
+      if(err){
+        await createDir();
+      }/* else{
+        await removeDir();
+        await createDir();
+        copyFiles();
+      } */
+    }
+  )
+}
+
+// fs.mkdir(
+//   path.join(__dirname, "project-dist"),
+//   { recursive: false },
+//   function () {}
+// );
+
 fs.readdir(
   path.join(__dirname, 'styles'),
   { withFileTypes: true },
